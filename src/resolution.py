@@ -16,14 +16,7 @@ from buildTree import get_info_from_file_system
 import get_dir
 import get_feature
 import word2vec
-#import network
-#import network_pair as network
-#import network_single as network
-#import network_update as network
-#import network_selfAttention as network
-#import network_attention as network
-#import network_feature as network
-import network_feature_update as network
+import network
 import generate_instance
 
 
