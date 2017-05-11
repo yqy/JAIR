@@ -138,8 +138,11 @@ class NetWork():
         cost = -(T.log((self.out*t).sum()))
 
         lr = T.scalar()
+
+        grads = theano.grad(cost, self.params)
         
-        updates = lasagne.updates.sgd(cost, self.params, lr)
+        #updates = lasagne.updates.sgd(cost, self.params, lr)
+        updates = lasagne.updates.rmsprop(grads, self.params)
         #updates = lasagne.updates.adadelta(cost, self.params)
 
         
