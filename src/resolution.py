@@ -166,37 +166,47 @@ if args.type == "nn_train":
 
     ##### begin train and test #####
     
+
+    DEV_PROB = args.dev_prob
+    random.shuffle(training_instances)
+
+    dev_instances = training_instances[:int(DEV_PROB*len(training_instances))]
+    train_instances = training_instances[int(DEV_PROB*len(training_instances))+1:]
+    dev_hits = 0
+    dev_iteration = 0
+    test_hits = 0
+    test_iteration = 0
+
     for echo in range(args.echos): 
         print >> sys.stderr, "Echo for time",echo
 
         start_time = timeit.default_timer()
         cost = 0.0
 
-        random.shuffle(training_instances)
+        random.shuffle(train_instances)
 
-        for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in training_instances:
-            #np_num = len(res_list)
-            #dijian = get_dijian(np_num)
+        for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in train_instances:
+        #for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in training_instances:
             cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list,args.lr)[0]
-            #cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list,dijian,args.lr)[0]
 
         end_time = timeit.default_timer()
         print >> sys.stderr,"Cost",cost
-        print >> sys.stderr,"Parameters"
-        LSTM.show_para()
+        #print >> sys.stderr,"Parameters"
+        #LSTM.show_para()
         print >> sys.stderr, end_time - start_time, "seconds!"
 
 
-        '''
         ### see how many hts ###
         hits = 0
-        for zp_x_pre,zp_x_post,np_x,mask,res_list in training_instances:
-            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x,mask)[0])
+        for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in dev_instances:
+            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc)[0])
             max_index = find_max(outputs)
             if res_list[max_index] == 1:
                 hits += 1 
-        print >> sys.stderr, "Training Hits:",hits,"/",len(training_instances)
-        '''
+        print >> sys.stderr, "DEV Hits:",hits,"/",len(training_instances)
+        if hits >= dev_hits:
+            dev_hits = hits
+            dev_iteration = echo
 
         #### Test for each echo ####
         
@@ -252,17 +262,12 @@ if args.type == "nn_train":
                 print >> sys.stderr, "Done ZP #%d/%d"%(numOfZP,len(test_instances))
 
         print >> sys.stderr, "Test Hits:",hits,"/",len(test_instances)
+        if hits >= test_hits:
+            test_hits = hits
+            test_iteration = echo
 
-        '''
-        ### see how many hits in DEV ###
-        hits = 0
-        for zp_x_pre,zp_x_post,np_x_list,np_x_pre_list,np_x_post_list,mask,mask_pre,mask_post,feature_list,res_list in training_instances:
-            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_list,np_x_pre_list,np_x_post_list,mask,mask_pre,mask_post,feature_list)[0])
-            max_index = find_max(outputs)
-            if res_list[max_index] == 1:
-                hits += 1 
-        print >> sys.stderr, "Dev Hits:",hits,"/",len(training_instances)
-        '''
+        print >> sys.stderr,"Summary: best hits in dev is %d in iteration %d --- best hits in test is %d in iteration %d"%(dev_hits,dev_iteration,test_hits,test_iteration)
+
         print "Echo",echo 
         print "Test Hits:",hits,"/",len(test_instances)
         get_prf(anaphorics_result,predict_result)

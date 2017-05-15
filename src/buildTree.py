@@ -208,6 +208,7 @@ def get_info_from_file(file_name,MAX=2):
     # azps:  (list)  存放着对应file下的每个azp                                       #
     #    ------------- 每个item 对应着 (sentence_index,zp_index,antecedents=[],is_azp)
     #   -------------  antecedents - (sentence_index,begin_word_index,end_word_index)
+    # fake_azps: (list) 存放内容同azps,存储所有可以被当作ZP的antecedents
     ################################################################################
     '''
     nodes_info = {}   
