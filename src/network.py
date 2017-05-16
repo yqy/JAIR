@@ -49,38 +49,48 @@ class NetWork():
         #repre_active = ReLU
         repre_active = linear
 
+        dropout_prob = T.scalar("probability of dropout")
+
         self.params = []
 
         self.zp_x_pre = T.matrix("zp_x_pre")
         self.zp_x_post = T.matrix("zp_x_post")
-        
-        zp_nn_pre = LSTM(embedding_dimention,n_hidden,self.zp_x_pre)
-        #zp_nn_pre = LSTM(embedding_dimention,n_hidden,self.zp_x_pre_dropout)
+
+        zp_x_pre_dropout = dropout_from_layer(self.zp_x_pre,dropout_prob)
+        zp_nn_pre = LSTM(embedding_dimention,n_hidden,zp_x_pre_dropout)
         self.params += zp_nn_pre.params
         
-        zp_nn_post = LSTM(embedding_dimention,n_hidden,self.zp_x_post)
-        #zp_nn_post = LSTM(embedding_dimention,n_hidden,self.zp_x_post_dropout)
+        zp_x_post_dropout = dropout_from_layer(self.zp_x_post,dropout_prob)
+        zp_nn_post = LSTM(embedding_dimention,n_hidden,zp_x_post_dropout)
         self.params += zp_nn_post.params
 
         self.zp_out = T.concatenate((zp_nn_pre.nn_out,zp_nn_post.nn_out))
 
-        self.zp_out_output = self.zp_out
+        self.zp_out_output = dropout_from_layer(self.zp_out,dropout_prob)
 
         #self.get_zp_out = theano.function(inputs=[self.zp_x_pre,self.zp_x_post],outputs=[self.ZP_layer.output])
 
 
         ### get sequence output for NP ###
-        self.np_x_post = T.tensor3("np_x")
-        self.np_x_postc = T.tensor3("np_x")
+        np_post = T.tensor3("np_x")
+        self.np_x_post = dropout_from_layer(np_post,dropout_prob)
+        np_postc = T.tensor3("np_x")
+        self.np_x_postc = dropout_from_layer(np_postc,dropout_prob)
 
-        self.np_x_pre = T.tensor3("np_x")
-        self.np_x_prec = T.tensor3("np_x")
+        np_pre = T.tensor3("np_x")
+        self.np_x_pre = dropout_from_layer(np_pre,dropout_prob)
+        np_prec = T.tensor3("np_x")
+        self.np_x_prec = dropout_from_layer(np_prec,dropout_prob)
 
-        self.mask_pre = T.matrix("mask")
-        self.mask_prec = T.matrix("mask")
+        mask_pre_x = T.matrix("mask")
+        self.mask_pre = dropout_from_layer(mask_pre_x,dropout_prob)
+        mask_prec_x = T.matrix("mask")
+        self.mask_prec = dropout_from_layer(mask_prec_x,dropout_prob)
 
-        self.mask_post = T.matrix("mask")
-        self.mask_postc = T.matrix("mask")
+        mask_post_x = T.matrix("mask")
+        self.mask_post = dropout_from_layer(mask_post_x,dropout_prob)
+        mask_postc_x = T.matrix("mask")
+        self.mask_postc = dropout_from_layer(mask_postc_x,dropout_prob)
     
         self.np_nn_pre = sub_LSTM_batch(embedding_dimention,n_hidden,self.np_x_pre,self.np_x_prec,self.mask_pre,self.mask_prec)
         self.params += self.np_nn_pre.params
@@ -89,8 +99,7 @@ class NetWork():
 
         self.np_nn_post_output = self.np_nn_post.nn_out
         self.np_nn_pre_output = self.np_nn_pre.nn_out
-
-        self.np_out = T.concatenate((self.np_nn_post_output,self.np_nn_pre_output),axis=1)
+        self.np_out = dropout_from_layer(T.concatenate((self.np_nn_post_output,self.np_nn_pre_output),axis=1),dropout_prob)
 
         np_nn_f = LSTM(n_hidden*2,n_hidden*2,self.np_out)
         self.params += np_nn_f.params
@@ -98,8 +107,8 @@ class NetWork():
         self.params += np_nn_b.params
 
         self.bi_np_out = T.concatenate((np_nn_f.all_hidden,np_nn_b.all_hidden[::-1]),axis=1)
+        self.np_out_output = dropout_from_layer(self.bi_np_out,dropout_prob)
 
-        self.np_out_output = self.bi_np_out
         self.get_np_out = theano.function(inputs=[self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc],outputs=[self.np_out_output])
 
         #self.feature = T.matrix("feature")
@@ -125,7 +134,7 @@ class NetWork():
 
         self.out = self.attention
 
-        self.get_out = theano.function(inputs=[self.zp_x_pre,self.zp_x_post,self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc],outputs=[self.out],on_unused_input='warn')
+        self.get_out = theano.function(inputs=[self.zp_x_pre,self.zp_x_post,self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc,dropout_prob],outputs=[self.out],on_unused_input='warn')
         
         l1_norm_squared = sum([(w**2).sum() for w in self.params])
         l2_norm_squared = sum([(abs(w)).sum() for w in self.params])
@@ -147,7 +156,7 @@ class NetWork():
 
         
         self.train_step = theano.function(
-            inputs=[self.zp_x_pre,self.zp_x_post,self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc,t,lr],
+            inputs=[self.zp_x_pre,self.zp_x_post,self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc,t,lr,dropout_prob],
             outputs=[cost],
             on_unused_input='warn',
             updates=updates)

@@ -187,7 +187,7 @@ if args.type == "nn_train":
 
         for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in train_instances:
         #for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in training_instances:
-            cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list,args.lr)[0]
+            cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list,args.lr,args.dropout_prob)[0]
 
         end_time = timeit.default_timer()
         print >> sys.stderr,"Cost",cost
@@ -199,7 +199,7 @@ if args.type == "nn_train":
         ### see how many hts ###
         hits = 0
         for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list in dev_instances:
-            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc)[0])
+            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,0.0)[0])
             max_index = find_max(outputs)
             if res_list[max_index] == 1:
                 hits += 1 
@@ -229,7 +229,7 @@ if args.type == "nn_train":
 
                 print >> sys.stderr, "Candidates:"
 
-                outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc)[0])
+                outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,0.0)[0])
                 max_index = find_max(outputs)
                 if res_list[max_index] == 1:
                     hits += 1
