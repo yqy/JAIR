@@ -109,7 +109,7 @@ class NetWork():
         self.bi_np_out = T.concatenate((np_nn_f.all_hidden,np_nn_b.all_hidden[::-1]),axis=1)
         self.np_out_output = dropout_from_layer(self.bi_np_out,dropout_prob)
 
-        self.get_np_out = theano.function(inputs=[self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc],outputs=[self.np_out_output])
+        #self.get_np_out = theano.function(inputs=[self.np_x_pre,self.np_x_prec,self.np_x_post,self.np_x_postc,self.mask_pre,self.mask_prec,self.mask_post,self.mask_postc],outputs=[self.np_out_output])
 
         #self.feature = T.matrix("feature")
         #self.feature_layer = Layer(feature_dimention,n_hidden,self.feature,repre_active) 
@@ -147,12 +147,11 @@ class NetWork():
         cost = -(T.log((self.out*t).sum()))
 
         lr = T.scalar()
-
-        grads = theano.grad(cost, self.params)
         
         #updates = lasagne.updates.sgd(cost, self.params, lr)
-        updates = lasagne.updates.rmsprop(grads, self.params,0.001)
-        #updates = lasagne.updates.adadelta(cost, self.params,0.01)
+        #updates = lasagne.updates.rmsprop(cost, self.params,0.001)
+        updates = lasagne.updates.adadelta(cost, self.params,0.01)
+        #updates = lasagne.updates.adam(cost, self.params,0.001)
 
         
         self.train_step = theano.function(
