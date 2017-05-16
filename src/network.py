@@ -142,8 +142,8 @@ class NetWork():
         grads = theano.grad(cost, self.params)
         
         #updates = lasagne.updates.sgd(cost, self.params, lr)
-        updates = lasagne.updates.rmsprop(grads, self.params)
-        #updates = lasagne.updates.adadelta(cost, self.params)
+        updates = lasagne.updates.rmsprop(grads, self.params,0.001)
+        #updates = lasagne.updates.adadelta(cost, self.params,0.01)
 
         
         self.train_step = theano.function(

@@ -203,7 +203,7 @@ if args.type == "nn_train":
             max_index = find_max(outputs)
             if res_list[max_index] == 1:
                 hits += 1 
-        print >> sys.stderr, "DEV Hits:",hits,"/",len(training_instances)
+        print >> sys.stderr, "DEV Hits:",hits,"/",len(dev_instances)
         if hits >= dev_hits:
             dev_hits = hits
             dev_iteration = echo
