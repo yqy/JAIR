@@ -16,7 +16,8 @@ from buildTree import get_info_from_file_system
 import get_dir
 import get_feature
 import word2vec
-import network
+#import network
+import network_feature as network
 import generate_instance
 
 
@@ -467,7 +468,7 @@ if args.type == "nn_feature":
         LSTM = cPickle.load(read_f)
         print >> sys.stderr,"Read model from ./model/lstm_init_model"
     else: 
-        LSTM = network.NetWork(128,args.embedding_dimention,61)
+        LSTM = network.NetWork(128,args.embedding_dimention,84)
         print >> sys.stderr,"save model ..."
         save_f = file('./model/lstm_init_model', 'wb') 
         cPickle.dump(LSTM, save_f, protocol=cPickle.HIGHEST_PROTOCOL)
@@ -497,7 +498,7 @@ if args.type == "nn_feature":
         for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,res_list in train_instances:
             #np_num = len(res_list)
             #dijian = get_dijian(np_num)
-            cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,res_list,args.lr)[0]
+            cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,res_list,args.lr,args.dropout_prob)[0]
             #cost += LSTM.train_step(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,res_list,dijian,args.lr)[0]
 
         end_time = timeit.default_timer()
@@ -511,7 +512,7 @@ if args.type == "nn_feature":
         hits = 0
         for zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,res_list in dev_instances:
 
-            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list)[0])
+            outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,0.0)[0])
             max_index = find_max(outputs)
             if res_list[max_index] == 1:
                 hits += 1 
@@ -542,7 +543,7 @@ if args.type == "nn_feature":
 
                 print >> sys.stderr, "Candidates:"
 
-                outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list)[0])
+                outputs = list(LSTM.get_out(zp_x_pre,zp_x_post,np_x_pre_list,np_x_prec_list,np_x_post_list,np_x_postc_list,mask_pre,mask_prec,mask_post,mask_postc,feature_list,0.0)[0])
                 max_index = find_max(outputs)
                 if res_list[max_index] == 1:
                     hits += 1
