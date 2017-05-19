@@ -1,4 +1,4 @@
-#coding=utf8
+#codinga=utf8
 import os
 import sys
 import re
@@ -1009,7 +1009,15 @@ def generate_test_instances_index(path,w2v):
 def generate_training_instances_feature(path,w2v):
 
     paths = get_dir.get_all_file(path,[])
+
     HcP = []
+    f = open("./HcP")
+    while True:
+        line = f.readline()
+        if not line:break
+        line = line.strip()
+        HcP.append(line)
+    f.close()
     
     training_instances = []
         
@@ -1072,8 +1080,8 @@ def generate_training_instances_feature(path,w2v):
 
                     if len(np_x_pre) == 0:
                         continue
-                    #ifl = get_feature.get_res_feature_NN(zp,candidate,zp_wl,candi_wl,[],[],HcP)
-                    ifl = get_feature.get_res_feature_NN_new(zp,candidate,zp_wl,candi_wl)
+                    ifl = get_feature.get_res_feature_NN(zp,candidate,zp_wl,candi_wl,[],[],HcP)
+                    #ifl = get_feature.get_res_feature_NN_new(zp,candidate,zp_wl,candi_wl)
                     
                     np_x_pre_list.append(np_x_pre)
                     np_x_prec_list.append(np_x_prec)
@@ -1114,7 +1122,16 @@ def generate_test_instances_feature(path,w2v):
     paths = get_dir.get_all_file(path,[])
     test_instances = []
     anaphorics_result = []
+
     HcP = []
+    f = open("./HcP")
+    while True:
+        line = f.readline()
+        if not line:break
+        line = line.strip()
+        HcP.append(line)
+    f.close()
+
     
     done_zp_num = 0
 
@@ -1177,8 +1194,8 @@ def generate_test_instances_feature(path,w2v):
 
                     if len(np_x_pre) == 0:
                         continue
-                    #ifl = get_feature.get_res_feature_NN(zp,candidate,zp_wl,candi_wl,[],[],HcP)
-                    ifl = get_feature.get_res_feature_NN_new(zp,candidate,zp_wl,candi_wl)
+                    ifl = get_feature.get_res_feature_NN(zp,candidate,zp_wl,candi_wl,[],[],HcP)
+                    #ifl = get_feature.get_res_feature_NN_new(zp,candidate,zp_wl,candi_wl)
                     
                     np_x_pre_list.append(np_x_pre)
                     np_x_prec_list.append(np_x_prec)
