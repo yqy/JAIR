@@ -1,4 +1,4 @@
-#codinga=utf8
+#coding=utf8
 import os
 import sys
 import re
